@@ -1,0 +1,3 @@
+-keep class com.alrm.alarm.** { *; }
+-keep class com.alrm.receiver.** { *; }
+-keep class com.alrm.service.** { *; }

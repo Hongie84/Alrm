@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Alrm</string>
+
+    <!-- Main screen -->
+    <string name="no_alarms">No alarms yet.\nTap + to add one.</string>
+    <string name="add_alarm">Add alarm</string>
+    <string name="edit_alarm">Edit alarm</string>
+    <string name="alarm_deleted">Alarm deleted</string>
+    <string name="undo">Undo</string>
+    <string name="settings">Settings</string>
+    <string name="settings_coming_soon">More settings coming soon</string>
+
+    <!-- Add/edit alarm -->
+    <string name="alarm_label">Label (optional)</string>
+    <string name="schedule_type">Schedule type</string>
+    <string name="puzzle_type">Snooze puzzle</string>
+    <string name="snooze_duration_label">Snooze duration (minutes)</string>
+    <string name="max_snoozes_label">Max snoozes (0 = unlimited)</string>
+    <string name="vibrate">Vibrate</string>
+    <string name="volume">Volume</string>
+    <string name="save">Save alarm</string>
+    <string name="calendar_keywords">Event keywords (comma separated)</string>
+    <string name="calendar_keywords_hint">Alarm fires when a calendar event today contains one of these keywords (leave empty to fire every day at this time)</string>
+    <string name="calendar_permission_required">Calendar permission is needed for calendar-based alarms</string>
+
+    <!-- Alarm fire screen -->
+    <string name="alarm_ringing">Alarm</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="snooze_solve_puzzle">Snooze (solve puzzle)</string>
+    <string name="solve_puzzle_to_snooze">Solve a %s to snooze</string>
+    <string name="no_more_snoozes">No more snoozes</string>
+    <string name="tap_to_dismiss">Tap to dismiss</string>
+
+    <!-- Puzzle -->
+    <string name="solve_to_snooze">Solve to snooze!</string>
+    <string name="enter_answer">Your answer</string>
+    <string name="enter_next_number">Next number</string>
+    <string name="enter_sequence">Re-enter the sequence (no spaces)</string>
+    <string name="memorise_sequence">Memorise this sequence</string>
+    <string name="what_was_the_sequence">What was the sequence?</string>
+    <string name="enter_digits_no_spaces">Enter all digits without spaces</string>
+    <string name="wrong_answer_try_again">Wrong! Try again.</string>
+    <string name="submit">Submit</string>
+    <string name="shake_phone_puzzle">Shake your phone %d times!</string>
+
+    <!-- Notifications -->
+    <string name="alarm_channel_name">Alarms</string>
+    <string name="alarm_channel_desc">Alarm sound and vibration notifications</string>
+</resources>
