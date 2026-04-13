@@ -49,7 +49,15 @@ class AlarmReceiver : BroadcastReceiver() {
                 val serviceIntent = Intent(context, AlarmService::class.java).apply {
                     putExtra(EXTRA_ALARM_ID, alarmId)
                 }
-                context.startService(serviceIntent)
+                // API 26+: background apps must use startForegroundService().
+                // Compile jar is API 23 so we invoke it via reflection at runtime.
+                try {
+                    context.javaClass
+                        .getMethod("startForegroundService", Intent::class.java)
+                        .invoke(context, serviceIntent)
+                } catch (e: NoSuchMethodException) {
+                    context.startService(serviceIntent)
+                }
             } finally {
                 pendingResult.finish()
             }

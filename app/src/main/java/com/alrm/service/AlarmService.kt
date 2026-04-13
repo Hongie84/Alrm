@@ -50,17 +50,21 @@ class AlarmService : Service() {
         alarmId = intent?.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1) ?: -1
         if (alarmId == -1) { stopSelf(); return START_NOT_STICKY }
 
+        // Must call startForeground() immediately (within 5 s of startForegroundService()).
+        // Use a placeholder notification; update it once the DB query returns.
+        startForeground(NOTIFICATION_ID, buildNotification(""))
+
         CoroutineScope(Dispatchers.IO).launch {
             val alarm = AlarmDatabase.getInstance(this@AlarmService)
-                .getAlarmDao().getAlarmById(alarmId) ?: return@launch
+                .getAlarmDao().getAlarmById(alarmId) ?: run { stopSelf(); return@launch }
 
-            val fireIntent = Intent(this@AlarmService, AlarmFireActivity::class.java).apply {
-                putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            }
-            startActivity(fireIntent)
+            // Refresh notification with real label and full-screen intent.
+            // The full-screen intent causes AlarmFireActivity to appear automatically —
+            // no direct startActivity() needed (and it would be blocked on API 29+).
+            @Suppress("DEPRECATION")
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            nm.notify(NOTIFICATION_ID, buildNotification(alarm.label))
 
-            startForeground(NOTIFICATION_ID, buildNotification(alarm.label))
             playRingtone(alarm.ringtoneUri, alarm.volume)
             if (alarm.vibrate) startVibration()
             handler.postDelayed(autoDismiss, MAX_DURATION_MS)

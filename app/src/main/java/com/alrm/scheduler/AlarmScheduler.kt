@@ -11,6 +11,11 @@ import java.util.Calendar
 
 class AlarmScheduler(private val context: Context) {
 
+    companion object {
+        // Snooze uses request codes offset by this to avoid colliding with normal alarm PIs.
+        private const val SNOOZE_REQUEST_OFFSET = 100_000
+    }
+
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     fun schedule(alarm: Alarm) {
@@ -23,6 +28,15 @@ class AlarmScheduler(private val context: Context) {
         alarmManager.setAlarmClock(
             AlarmManager.AlarmClockInfo(triggerAtMillis, pi), pi
         )
+    }
+
+    fun scheduleSnooze(alarm: Alarm) {
+        val triggerMs = System.currentTimeMillis() + alarm.snoozeDurationMinutes * 60_000L
+        val pi = PendingIntent.getBroadcast(
+            context, alarm.id + SNOOZE_REQUEST_OFFSET, buildIntent(alarm),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerMs, pi), pi)
     }
 
     fun cancel(alarm: Alarm) {

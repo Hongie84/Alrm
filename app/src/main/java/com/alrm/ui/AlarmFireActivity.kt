@@ -10,6 +10,7 @@ import com.alrm.R
 import com.alrm.alarm.Alarm
 import com.alrm.alarm.AlarmDatabase
 import com.alrm.receiver.AlarmReceiver
+import com.alrm.scheduler.AlarmScheduler
 import com.alrm.service.AlarmService
 import kotlinx.coroutines.*
 import java.util.Locale
@@ -80,8 +81,11 @@ class AlarmFireActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_PUZZLE && resultCode == RESULT_OK) {
+            val a = alarm ?: run { dismiss(); return }
             snoozeCount++
             stopAlarmService()
+            // Schedule the snooze: fire again after snoozeDurationMinutes
+            AlarmScheduler(this).scheduleSnooze(a)
             finish()
         }
     }
