@@ -21,7 +21,7 @@ class BootReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val alarms = AlarmDatabase.getInstance(context).alarmDao().getEnabledAlarms()
+                val alarms = AlarmDatabase.getInstance(context).getAlarmDao().getEnabledAlarms()
                 alarms.forEach { scheduler.schedule(it) }
             } finally {
                 pendingResult.finish()

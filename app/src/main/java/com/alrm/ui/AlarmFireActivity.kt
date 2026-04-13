@@ -1,72 +1,73 @@
 package com.alrm.ui
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import android.widget.Button
+import android.widget.TextView
 import com.alrm.R
-import com.alrm.alarm.AlarmDatabase
 import com.alrm.alarm.Alarm
-import com.alrm.alarm.PuzzleType
-import com.alrm.databinding.ActivityAlarmFireBinding
+import com.alrm.alarm.AlarmDatabase
 import com.alrm.receiver.AlarmReceiver
 import com.alrm.service.AlarmService
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.Locale
 
-class AlarmFireActivity : AppCompatActivity() {
+class AlarmFireActivity : Activity() {
 
-    private lateinit var binding: ActivityAlarmFireBinding
+    companion object {
+        private const val REQUEST_PUZZLE = 42
+    }
+
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var alarm: Alarm? = null
     private var snoozeCount = 0
 
+    @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Show over lock screen and turn on screen
         window.addFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
             WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
             WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
         super.onCreate(savedInstanceState)
-        binding = ActivityAlarmFireBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_alarm_fire)
 
         val alarmId = intent.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1)
-        if (alarmId == -1) {
-            finish()
-            return
-        }
+        if (alarmId == -1) { finish(); return }
 
-        lifecycleScope.launch {
-            alarm = AlarmDatabase.getInstance(this@AlarmFireActivity)
-                .alarmDao().getAlarmById(alarmId)
+        scope.launch {
+            alarm = withContext(Dispatchers.IO) {
+                AlarmDatabase.getInstance(this@AlarmFireActivity)
+                    .getAlarmDao().getAlarmById(alarmId)
+            }
             alarm?.let { displayAlarm(it) }
         }
 
-        binding.btnDismiss.setOnClickListener { dismiss() }
-        binding.btnSnooze.setOnClickListener { initiateSnooze() }
+        (findViewById(R.id.btnDismiss) as Button).setOnClickListener { dismiss() }
+        (findViewById(R.id.btnSnooze) as Button).setOnClickListener { initiateSnooze() }
     }
 
     private fun displayAlarm(alarm: Alarm) {
-        binding.textTime.text = String.format(Locale.getDefault(), "%02d:%02d", alarm.hour, alarm.minute)
-        binding.textLabel.text = alarm.label.ifEmpty { getString(R.string.alarm_ringing) }
-        binding.textPuzzleHint.text = getString(R.string.solve_puzzle_to_snooze, alarm.puzzleType.label)
+        (findViewById(R.id.textTime) as TextView).text =
+            String.format(Locale.getDefault(), "%02d:%02d", alarm.hour, alarm.minute)
+        (findViewById(R.id.textLabel) as TextView).text =
+            alarm.label.ifEmpty { getString(R.string.alarm_ringing) }
+        (findViewById(R.id.textPuzzleHint) as TextView).text =
+            getString(R.string.solve_puzzle_to_snooze, alarm.puzzleType.label)
 
-        val maxSnoozes = alarm.maxSnoozes
-        if (maxSnoozes > 0 && snoozeCount >= maxSnoozes) {
-            binding.btnSnooze.isEnabled = false
-            binding.btnSnooze.text = getString(R.string.no_more_snoozes)
+        if (alarm.maxSnoozes > 0 && snoozeCount >= alarm.maxSnoozes) {
+            val snoozeBtn = findViewById(R.id.btnSnooze) as Button
+            snoozeBtn.isEnabled = false
+            snoozeBtn.text = getString(R.string.no_more_snoozes)
         }
     }
 
     private fun initiateSnooze() {
         val a = alarm ?: return
-        val max = a.maxSnoozes
-        if (max > 0 && snoozeCount >= max) return
-
-        // Launch puzzle; snooze only happens after puzzle is solved
+        if (a.maxSnoozes > 0 && snoozeCount >= a.maxSnoozes) return
         val intent = Intent(this, PuzzleActivity::class.java).apply {
             putExtra(AlarmReceiver.EXTRA_ALARM_ID, a.id)
             putExtra(PuzzleActivity.EXTRA_SNOOZE_DURATION, a.snoozeDurationMinutes)
@@ -85,23 +86,14 @@ class AlarmFireActivity : AppCompatActivity() {
         }
     }
 
-    private fun dismiss() {
-        stopAlarmService()
-        finish()
-    }
+    private fun dismiss() { stopAlarmService(); finish() }
 
     private fun stopAlarmService() {
-        val stopIntent = Intent(this, AlarmService::class.java).apply {
+        startService(Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_DISMISS
-        }
-        startService(stopIntent)
+        })
     }
 
-    override fun onBackPressed() {
-        // Prevent back-press dismissing without solving
-    }
-
-    companion object {
-        private const val REQUEST_PUZZLE = 42
-    }
+    override fun onBackPressed() {}
+    override fun onDestroy() { scope.cancel(); super.onDestroy() }
 }

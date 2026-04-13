@@ -1,25 +1,16 @@
 package com.alrm.ui
 
+import android.app.Activity
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.TextView
 import com.alrm.R
-import com.alrm.databinding.ActivitySettingsBinding
 
-class SettingsActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivitySettingsBinding
-
+class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySettingsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.settings)
+        setContentView(R.layout.activity_settings)
+        title = "Settings"
+        actionBar?.setDisplayHomeAsUpEnabled(true)
     }
-
-    override fun onSupportNavigateUp(): Boolean {
-        finish()
-        return true
-    }
+    override fun onNavigateUp(): Boolean { finish(); return true }
 }

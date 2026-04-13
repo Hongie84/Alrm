@@ -1,81 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="#FFFFFF"
+    android:padding="24dp">
 
-    <!-- Alarm time display -->
     <TextView
         android:id="@+id/textTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
         android:text="07:00"
-        android:textAppearance="?attr/textAppearanceDisplayLarge"
-        android:textColor="?attr/colorPrimary"
         android:textSize="72sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintBottom_toTopOf="@id/textLabel"
-        android:layout_marginTop="80dp" />
+        android:textColor="#6750A4"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/textLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/alarm_ringing"
-        android:textAppearance="?attr/textAppearanceTitleLarge"
+        android:layout_below="@id/textTime"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textTime"
-        app:layout_constraintBottom_toTopOf="@id/textPuzzleHint" />
+        android:textSize="20sp"
+        android:text="@string/alarm_ringing" />
 
     <TextView
         android:id="@+id/textPuzzleHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingHorizontal="32dp"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_below="@id/textLabel"
         android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textLabel"
-        app:layout_constraintBottom_toTopOf="@id/btnDismiss" />
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="#666666" />
 
-    <!-- Dismiss button -->
     <Button
         android:id="@+id/btnDismiss"
-        style="@style/Widget.Material3.Button.ElevatedButton"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="32dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="72dp"
         android:text="@string/dismiss"
         android:textSize="18sp"
-        android:paddingVertical="16dp"
-        app:layout_constraintBottom_toTopOf="@id/btnSnooze"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:padding="16dp" />
 
-    <!-- Snooze button -->
     <Button
         android:id="@+id/btnSnooze"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
         android:text="@string/snooze_solve_puzzle"
         android:textSize="16sp"
-        android:paddingVertical="14dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:padding="14dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

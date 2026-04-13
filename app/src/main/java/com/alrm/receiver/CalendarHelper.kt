@@ -4,17 +4,12 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.CalendarContract
-import androidx.core.content.ContextCompat
 import java.util.Calendar
 
 object CalendarHelper {
 
-    /**
-     * Returns true if any calendar event today contains at least one of the
-     * comma-separated keywords (case-insensitive).
-     */
     fun hasTodayEvent(context: Context, keywords: String): Boolean {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR)
+        if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR)
             != PackageManager.PERMISSION_GRANTED
         ) return false
 
@@ -22,7 +17,7 @@ object CalendarHelper {
             .map { it.trim().lowercase() }
             .filter { it.isNotEmpty() }
 
-        if (keywordList.isEmpty()) return true // no filter = always fire
+        if (keywordList.isEmpty()) return true
 
         val startOfDay = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -51,11 +46,8 @@ object CalendarHelper {
         return false
     }
 
-    /**
-     * Returns a list of today's event titles for display.
-     */
     fun getTodayEventTitles(context: Context): List<String> {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR)
+        if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR)
             != PackageManager.PERMISSION_GRANTED
         ) return emptyList()
 

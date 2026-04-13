@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import com.alrm.alarm.Alarm
 import com.alrm.alarm.ScheduleType
 import com.alrm.receiver.AlarmReceiver
@@ -14,7 +13,6 @@ class AlarmScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    /** Schedule the next occurrence of the alarm. */
     fun schedule(alarm: Alarm) {
         val triggerAtMillis = nextTriggerTime(alarm) ?: return
         val intent = buildIntent(alarm)
@@ -22,20 +20,11 @@ class AlarmScheduler(private val context: Context) {
             context, alarm.id, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            !alarmManager.canScheduleExactAlarms()
-        ) {
-            // Fall back to inexact if permission not granted
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi)
-        } else {
-            alarmManager.setAlarmClock(
-                AlarmManager.AlarmClockInfo(triggerAtMillis, pi), pi
-            )
-        }
+        alarmManager.setAlarmClock(
+            AlarmManager.AlarmClockInfo(triggerAtMillis, pi), pi
+        )
     }
 
-    /** Cancel a scheduled alarm. */
     fun cancel(alarm: Alarm) {
         val intent = buildIntent(alarm)
         val pi = PendingIntent.getBroadcast(
@@ -46,10 +35,6 @@ class AlarmScheduler(private val context: Context) {
         pi.cancel()
     }
 
-    /**
-     * Calculate the next Calendar instant this alarm should fire.
-     * Returns null if no future occurrence can be determined.
-     */
     fun nextTriggerTime(alarm: Alarm): Long? {
         val now = Calendar.getInstance()
         val candidate = Calendar.getInstance().apply {
@@ -59,7 +44,6 @@ class AlarmScheduler(private val context: Context) {
             set(Calendar.MILLISECOND, 0)
         }
 
-        // If the candidate time today is already past, advance to tomorrow
         if (candidate.timeInMillis <= now.timeInMillis) {
             candidate.add(Calendar.DAY_OF_YEAR, 1)
         }
@@ -94,11 +78,7 @@ class AlarmScheduler(private val context: Context) {
                 null
             }
 
-            ScheduleType.CALENDAR_EVENT -> {
-                // Calendar events are resolved at fire time via WorkManager daily check.
-                // Schedule a daily check at the alarm's set time.
-                candidate.timeInMillis
-            }
+            ScheduleType.CALENDAR_EVENT -> candidate.timeInMillis
         }
     }
 

@@ -1,8 +1,6 @@
 package com.alrm.service
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -12,13 +10,11 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.os.VibrationEffect
 import android.os.Vibrator
-import android.os.VibratorManager
-import androidx.core.app.NotificationCompat
 import com.alrm.R
 import com.alrm.alarm.AlarmDatabase
 import com.alrm.receiver.AlarmReceiver
@@ -33,164 +29,114 @@ class AlarmService : Service() {
         const val CHANNEL_ID = "alrm_alarm_channel"
         const val NOTIFICATION_ID = 1001
         const val ACTION_DISMISS = "com.alrm.ACTION_DISMISS"
-        const val ACTION_SNOOZE_PUZZLE = "com.alrm.ACTION_SNOOZE_PUZZLE"
-        private const val MAX_DURATION_MS = 5 * 60 * 1000L // auto-dismiss after 5 min
+        private const val MAX_DURATION_MS = 5 * 60 * 1000L
+        private const val API_LOLLIPOP = 21
+        private const val API_M = 23
     }
 
     private var mediaPlayer: MediaPlayer? = null
     private var vibrator: Vibrator? = null
     private val handler = Handler(Looper.getMainLooper())
     private var alarmId: Int = -1
-
-    private val autoDismissRunnable = Runnable { stopAlarm() }
+    private val autoDismiss = Runnable { stopAlarm() }
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_DISMISS) {
-            stopAlarm()
-            return START_NOT_STICKY
-        }
+        if (intent?.action == ACTION_DISMISS) { stopAlarm(); return START_NOT_STICKY }
 
         alarmId = intent?.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1) ?: -1
-        if (alarmId == -1) {
-            stopSelf()
-            return START_NOT_STICKY
-        }
+        if (alarmId == -1) { stopSelf(); return START_NOT_STICKY }
 
         CoroutineScope(Dispatchers.IO).launch {
             val alarm = AlarmDatabase.getInstance(this@AlarmService)
-                .alarmDao().getAlarmById(alarmId) ?: run {
-                stopSelf()
-                return@launch
-            }
+                .getAlarmDao().getAlarmById(alarmId) ?: return@launch
 
-            // Launch the full-screen alarm UI
             val fireIntent = Intent(this@AlarmService, AlarmFireActivity::class.java).apply {
                 putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
             startActivity(fireIntent)
 
-            // Show foreground notification
             startForeground(NOTIFICATION_ID, buildNotification(alarm.label))
-
-            // Play ringtone
             playRingtone(alarm.ringtoneUri, alarm.volume)
-
-            // Vibrate
             if (alarm.vibrate) startVibration()
-
-            // Auto-dismiss safety net
-            handler.postDelayed(autoDismissRunnable, MAX_DURATION_MS)
+            handler.postDelayed(autoDismiss, MAX_DURATION_MS)
         }
-
         return START_STICKY
     }
 
     private fun playRingtone(uriString: String, volume: Int) {
-        val uri: Uri = if (uriString.isNotEmpty()) {
-            Uri.parse(uriString)
-        } else {
-            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-        }
+        val uri: Uri = if (uriString.isNotEmpty()) Uri.parse(uriString)
+        else RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
 
         mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-            )
+            if (Build.VERSION.SDK_INT >= API_LOLLIPOP) {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                setAudioStreamType(AudioManager.STREAM_ALARM)
+            }
             setDataSource(this@AlarmService, uri)
             isLooping = true
-            if (volume >= 0) {
-                val v = volume / 100f
-                setVolume(v, v)
-            }
+            if (volume >= 0) { val v = volume / 100f; setVolume(v, v) }
             prepare()
             start()
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun startVibration() {
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         val pattern = longArrayOf(0, 500, 500, 500, 500, 500, 1000)
-        vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vm.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
-        vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+        vibrator?.vibrate(pattern, 0)
     }
 
+    @Suppress("DEPRECATION")
     fun stopAlarm() {
-        handler.removeCallbacks(autoDismissRunnable)
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        mediaPlayer = null
-        vibrator?.cancel()
-        vibrator = null
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        handler.removeCallbacks(autoDismiss)
+        mediaPlayer?.stop(); mediaPlayer?.release(); mediaPlayer = null
+        vibrator?.cancel(); vibrator = null
+        stopForeground(true)
         stopSelf()
     }
 
+    @Suppress("DEPRECATION")
     private fun buildNotification(label: String): Notification {
-        val dismissIntent = Intent(this, AlarmService::class.java).apply {
-            action = ACTION_DISMISS
-        }
-        val dismissPi = PendingIntent.getService(
-            this, 0, dismissIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         val fullScreenIntent = Intent(this, AlarmFireActivity::class.java).apply {
             putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        val fullScreenPi = PendingIntent.getActivity(
-            this, alarmId, fullScreenIntent,
+        val flags = if (Build.VERSION.SDK_INT >= API_M) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val fullScreenPi = PendingIntent.getActivity(this, alarmId, fullScreenIntent, flags)
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val dismissIntent = Intent(this, AlarmService::class.java).apply { action = ACTION_DISMISS }
+        val dismissPi = PendingIntent.getService(this, 0, dismissIntent, flags)
+
+        return Notification.Builder(this)
             .setSmallIcon(R.drawable.ic_alarm)
             .setContentTitle(if (label.isNotEmpty()) label else getString(R.string.alarm_ringing))
             .setContentText(getString(R.string.tap_to_dismiss))
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setFullScreenIntent(fullScreenPi, true)
             .addAction(R.drawable.ic_dismiss, getString(R.string.dismiss), dismissPi)
             .setOngoing(true)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setCategory(Notification.CATEGORY_ALARM)
             .build()
     }
 
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            getString(R.string.alarm_channel_name),
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = getString(R.string.alarm_channel_desc)
-            enableLights(true)
-            enableVibration(false) // handled manually
-            setBypassDnd(true)
-            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        }
-        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        nm.createNotificationChannel(channel)
-    }
-
     override fun onBind(intent: Intent?): IBinder? = null
-
-    override fun onDestroy() {
-        stopAlarm()
-        super.onDestroy()
-    }
+    override fun onDestroy() { stopAlarm(); super.onDestroy() }
 }
