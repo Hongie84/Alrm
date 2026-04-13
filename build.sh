@@ -45,6 +45,8 @@ KOTLINC_OUT=$($KOTLINC $KOTLIN_SOURCES $JAVA_SOURCES \
     -d "$BUILD/kotlin_classes" \
     -jvm-target 1.8 \
     -api-version 1.9 \
+    -Xlambdas=class \
+    -Xsam-conversions=class \
     2>&1)
 KOTLINC_STATUS=$?
 echo "$KOTLINC_OUT" | grep -v "^w:" | grep -v "^Picked up" || true
