@@ -1,0 +1,9 @@
+build_out/
+*.apk
+# The published debug build is tracked deliberately, for sideloading.
+!dist/*.apk
+*.iml
+.gradle/
+.idea/
+local.properties
+.DS_Store
