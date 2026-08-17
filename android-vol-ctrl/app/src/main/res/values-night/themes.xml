@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.VolCtrl" parent="@android:style/Theme.Material">
+        <item name="android:colorPrimary">#4CDADE</item>
+        <item name="android:colorPrimaryDark">#003739</item>
+        <item name="android:colorAccent">#4CDADE</item>
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+</resources>

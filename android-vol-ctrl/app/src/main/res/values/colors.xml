@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#00696D</color>
+    <color name="primary_dark">#003739</color>
+    <color name="primary_container">#6FF6FB</color>
+    <color name="on_primary_container">#002021</color>
+    <color name="window_background">#F5FAFA</color>
+
+    <color name="icon_tint">#49454F</color>
+    <color name="section_header">#00696D</color>
+    <color name="banner_background">#FFE0B2</color>
+    <color name="banner_text">#4A2800</color>
+</resources>

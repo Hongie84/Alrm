@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_save_preset"
+        android:title="@string/action_save_preset"
+        android:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_presets"
+        android:title="@string/title_presets"
+        android:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_dnd_access"
+        android:title="@string/action_dnd_access"
+        android:showAsAction="never" />
+
+</menu>

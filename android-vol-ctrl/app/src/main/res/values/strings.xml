@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vol Ctrl</string>
+    <string name="title_presets">Presets</string>
+
+    <string name="section_ringer_mode">Ringer mode</string>
+    <string name="section_volumes">Volumes</string>
+
+    <string name="stream_media">Media</string>
+    <string name="stream_ring">Ring</string>
+    <string name="stream_notification">Notification</string>
+    <string name="stream_alarm">Alarm</string>
+    <string name="stream_system">System</string>
+    <string name="stream_call">Call</string>
+
+    <string name="ringer_normal">Normal</string>
+    <string name="ringer_vibrate">Vibrate</string>
+    <string name="ringer_silent">Silent</string>
+
+    <string name="volume_value">%1$d / %2$d</string>
+    <string name="action_mute">Mute</string>
+    <string name="action_unmute">Unmute</string>
+
+    <string name="action_save_preset">Save preset</string>
+    <string name="action_dnd_access">Do Not Disturb access</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+
+    <string name="preset_name_hint">Preset name</string>
+    <string name="preset_saved">Saved \"%1$s\"</string>
+    <string name="preset_applied">Applied \"%1$s\"</string>
+    <string name="delete_preset_title">Delete \"%1$s\"?</string>
+    <string name="presets_empty">No presets yet.\n\nSet the volumes you want, then choose "Save preset" from the menu.</string>
+
+    <string name="dnd_banner">Do Not Disturb access is off, so silencing the ring and notification streams will be refused. Tap to grant it.</string>
+    <string name="error_needs_dnd_access">That change needs Do Not Disturb access.</string>
+    <string name="error_no_dnd_settings">This device has no Do Not Disturb access screen.</string>
+    <string name="error_preset_name_required">Give the preset a name.</string>
+</resources>
