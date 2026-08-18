@@ -37,6 +37,7 @@ repository at build time. The app uses only framework classes, which leaves the
 Kotlin standard library as its single dependency.
 
 ```sh
+chmod +x build.sh   # once, if your checkout lost the executable bit
 ./build.sh
 ```
 
