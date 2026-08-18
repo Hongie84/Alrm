@@ -2,6 +2,9 @@ build_out/
 *.apk
 # The published debug build is tracked deliberately, for sideloading.
 !dist/*.apk
+# build.sh locates a stdlib itself; a vendored copy is a local override only,
+# and pinning one risks mismatching whichever kotlinc does the compiling.
+libs/*.jar
 *.iml
 .gradle/
 .idea/
